@@ -1,20 +1,23 @@
 import React from "react";
-import History from "./History";
+import StartingInputs from "./components/StartingInputs"; 
+import LoanBreakdown from "./components/LoanBreakdown"; 
+import Payments from "./components/Payments"; 
+import History from "./components/History";
 
 class Calculator extends React.Component {
   constructor() {
     super();
     this.state = {
-      loanHeading: "",
-      interestHeading: "",
-      balance: "",
-      minLoanDue: "",
-      minBalanceDue: "",
-      payment: "",
-      id: 1,
-      newBalance: "",
+      principal: 0.00, 
+      interest: 0.00, 
+      balance: 0.00,
+      minPrincipal: 0.00, 
+      totalPayment: 0.00, 
       count: 1,
-      payments: []
+      id: 0, 
+      newBalance: "", 
+      payments: [],
+      warning:""
     };
   }
 
@@ -23,194 +26,177 @@ class Calculator extends React.Component {
     this.setState({ [e.target.name]: e.target.value });
   };
 
-  /*
-  What needs to happen when you click handle submit?
-  1.Calculate the interest, calculate the loan, and update the principal, interest and loan.
-  */
   handleSubmit = (e) => {
-    e.preventDefault();
-    if (this.checkInput(this.state.loan, this.state.interest)) {
+    if(this.checkInput(this.state.principalInput) && this.checkInput(this.state.interestInput) && this.currDebt(this.state.principal)){
+
+      let principal, interest, balance, minPrincipal, totalPayment = '';
+
+      if(this.nearEdge(this.state.principalInput)) {
+        principal = this.state.principalInput; 
+        interest = 0; 
+        balance = this.calcFinalPay(this.state.principalInput);
+        minPrincipal = this.calcMinPrincipal(this.state.principalInput); 
+        totalPayment = this.calcFinalPay(this.state.principalInput); 
+      }else{
+        principal = this.state.principalInput; 
+        interest = this.calcInterest(this.state.interestInput,this.state.principalInput);
+        balance = this.calcBalance(this.state.interestInput, this.state.principalInput);
+        minPrincipal = this.calcMinPrincipal(this.state.principalInput);
+        totalPayment = this.calcMinPay(this.state.interestInput, this.state.principalInput);
+      }
+
       this.setState({
-        loanHeading: this.state.loan,
-        interestHeading: this.calculateInterest(
-          this.state.interest,
-          this.state.loan
-        ),
-        balance: this.calculateBalance(this.state.interest, this.state.loan),
-        minLoanDue: this.state.loan / 100,
-        minBalanceDue: this.calculateMinPay(
-          this.state.interest,
-          this.state.loan
-        )
+        principal: principal,
+        interest: interest,
+        balance: balance,
+        minPrincipal: minPrincipal,
+        totalPayment: totalPayment
       });
-    } else {
-      alert(
-        "Loan and Interest need to be positive numbers and greater than 0."
-      );
     }
+    e.preventDefault();
   };
 
+
   handlePayment = (e) => {
-    e.preventDefault();
-    // if (this.checkPayment(this.state.payment, this.state.minBalanceDue)) {
-      let newBalance = this.calculateNewBalance(
-        this.state.balance,
-        this.state.payment
-      );
-      console.log(newBalance);
+    if(this.checkInput(this.state.paymentInput) && (this.checkPayment(this.state.paymentInput, this.state.totalPayment, this.state.balance))){
+
+      let newBalance = this.calcNewBalance(this.state.balance, this.state.paymentInput); 
+      let principalPaid = this.calcPrincipalPaid(this.state.paymentInput, this.state.interest); 
+      let balance, interest,minPrincipal, totalPayment = ''
+
+      if(this.nearEdge(newBalance)) {
+        balance = this.calcFinalPay(newBalance);
+        interest = 0;
+        minPrincipal = this.calcMinPrincipal(newBalance);
+        totalPayment = this.calcFinalPay(newBalance); 
+      }else {
+        balance = this.calcBalance(this.state.interestInput, newBalance);
+        interest = this.calcInterest(this.state.interestInput, newBalance);
+        minPrincipal = this.calcMinPrincipal(newBalance); 
+        totalPayment = this.calcMinPay(this.state.interestInput, newBalance);
+      }
+
       const newPayment = {
         id: this.state.id,
         count: this.state.count,
-        prevBalance: this.state.loanHeading,
-        interest: this.state.interestHeading,
-        payment: this.state.payment,
+        prevBalance: this.state.principal,
+        interest: this.state.interest,
+        principalPaid: principalPaid,
         newBalance: newBalance
       };
-
+  
       this.setState((state) => ({
-        loanHeading: newBalance,
-        interestHeading: this.calculateInterest(
-          this.state.interest,
-          newBalance
-        ),
-        id: this.increase(this.state.id), 
+        id:this.increase(this.state.id), 
         count: this.increase(this.state.count),
-        balance: this.calculateBalance(this.state.interest, newBalance),
-        minLoanDue: this.calculateMinLoan(newBalance),
-        minBalanceDue: this.calculateMinPay(this.state.interest, newBalance),
+        principal: newBalance,
+        interest: interest,
+        balance: balance, 
+        minPrincipal: minPrincipal,
+        totalPayment: totalPayment,
         payments: [...state.payments, newPayment],
-        payment: " "
+        paymentInput:"",
       }));
-    // } else {
-    //   alert("Payment too low. Please enter at least the minimum payment.");
-    // }
+    }
+    e.preventDefault();
   };
+
+  handleReset = (e) => {
+    e.preventDefault(); 
+    this.setState({
+      principalInput: "", 
+      interestInput: "", 
+      principal: 0, 
+      interest: 0, 
+      balance: 0, 
+      minPrincipal: 0, 
+      totalPayment: 0, 
+      count:1,
+      id:1, 
+      payments:[], 
+      payment:"",
+      warning:""
+    })
+  }
 
   //calculations
-  calculateInterest = (interest, loan) => {
-    return ((interest / 100 / 12) * loan).toFixed(2);
-  };
-
-  calculateBalance = (interest, balance) => {
-    return (
-      Number(balance) +
-      (Number(interest) / 100 / 12) * Number(balance)
-    ).toFixed(2);
-  };
-
-  calculateMinLoan(balance) {
-    return Number(balance) / 100;
-  }
-
-  calculateMinPay = (interest, balance) => {
-    return (
-      Number(balance) / 100 +
-      (Number(interest) / 100 / 12) * Number(balance)
-    ).toFixed(2);
-  };
-
-  calculateNewBalance = (balance, payment) => {
-    return (Number(balance) - Number(payment)).toFixed(2);
-  };
-
-  increase = (int) => {
-    return int += 1;
-  }
+  calcInterest = (interest, loan) => ((Number(interest) * 0.01 / 12) * Number(loan)).toFixed(2); 
+  calcBalance = (interest, loan) => (Number(loan) + (Number(interest) * 0.01 / 12) * Number(loan)).toFixed(2); 
+  calcMinPrincipal = (loan) => (Number(loan) * 0.01).toFixed(2); 
+  calcMinPay = (interest, balance) => (Number(balance) * 0.01 + (Number(interest) * 0.01 / 12)  * Number(balance)).toFixed(2); 
+  calcNewBalance = (balance, payment) => (Number(balance) - Number(payment)).toFixed(2); 
+  calcPrincipalPaid = (payment, interest) => (Number(payment) - Number(interest)).toFixed(2);
+  calcFinalPay = (balance) => (Number(balance) + Number(balance) * 0.01).toFixed(2); 
+  increase = (int) => int += 1; 
 
   //Input checks
-  checkPayment = (payment, minimumPayment) => {
-    if (payment >= minimumPayment) {
-      return true;
+  checkInput = (input) => {
+    if(Number(input) <= 0){
+      this.setState({warning:'Inputs must be greater than 0.'})
+      return false;
     }
-    return false;
-  };
+    this.setState({warning:''})
+    return true; 
+  }
 
-  checkInput = (loan, interest) => {
-    if (Math.sign(Number(loan)) > 0 && 0 < Math.sign(Number(interest))) {
-      return true;
+  checkPayment = (payment, totalPayment, balance) => {
+    if(Number(payment) < Number(totalPayment)){
+      this.setState({warning:"Payment is too low."})
+      return false; 
+    }else if(Number(payment) > Number(balance)) {
+      this.setState({warning:"Payment is too much."})
+      return false; 
     }
-    return false;
-  };
+    this.setState({warning:''})
+    return true
+  }
+
+  nearEdge = (balance) => { 
+    if(balance <= 100){
+      return true; 
+    }
+    return false; 
+  }
+
+  currDebt = (principal) => {
+    if(principal){
+      this.setState({warning:'please click reset to start over.'})
+      return false 
+    }
+    this.setState({warning:''})
+    return true
+  }
 
   render() {
-    const {
-      loan,
-      interest,
-      loanHeading,
-      interestHeading,
-      balance,
-      minLoanDue,
-      minBalanceDue,
-      payment
-    } = this.state;
     return (
       <div>
-        <div>
-          <div>
-            <h4>Starting Balance: </h4>
-            <input type="text" name="loan" value={loan} onChange={this.handleInput} />
-            <h4>Interest Rate:</h4>
-            <input
-              type="text"
-              name="interest"
-              value={interest}
-              onChange={this.handleInput}
+        <h4>{this.state.warning}</h4>
+        <div className="calculator-container">
+          <div className="input-container">
+            <StartingInputs 
+            principalInput={this.state.principalInput}
+            interestInput={this.state.interestInput}
+            handleChange={this.onInput}
+            onInput={this.handleInput} 
+            onSubmit={this.handleSubmit} 
+            onReset={this.handleReset} 
             />
+            <Payments 
+            paymentInput={this.state.paymentInput}
+            handleChange={this.onInput}
+            onInput={this.handleInput} 
+            onPayment={this.handlePayment} 
+            />  
           </div>
-          <div>
-            <span>
-              <button onClick={this.handleSubmit}>Calculate</button>
-            </span>
-            <span>
-              <button onClick={this.handleReset}>Start Over</button>
-            </span>
+          <div className="breakdown-container">
+            <LoanBreakdown 
+              loanHeading = {this.state.principal} 
+              interestHeading = {this.state.interest}
+              balance = {this.state.balance}
+              minPrincipal = {this.state.minPrincipal} 
+              totalPayment = {this.state.totalPayment} 
+            /> 
           </div>
-
-          {/* <StartingInput /> */}
-
-          {/* <Inputs
-            label="loan"
-            heading="Loan"
-            id="loan"
-            name="loan"
-            value={loan}
-            onInput={this.handleInput}
-          />
-          <Inputs
-            label="interest"
-            heading="Interest"
-            id="interest"
-            name="interest"
-            value={interest}
-            onInput={this.handleInput}
-          /> */}
         </div>
-
-        <div>
-          <h2>=/Loan Breakdown/=</h2>
-          <h3>Principal: {loanHeading}</h3>
-          <h3>Interest: {interestHeading}</h3>
-          <h3>Total Balance: {balance}</h3>
-          <h2>=/Payment/=</h2>
-          <h3>1% of principal required: {minLoanDue}</h3>
-          <h3>Min Total Payment: {minBalanceDue}</h3>
-          {/* <LoanBreakDown /> */}
-        </div>
-
-        <div>
-          <h4>Make A Payment:</h4>
-          <input type="text" name="payment" value={payment} onChange={this.handleInput} />
-          {/* <Inputs
-            label="payment"
-            heading="payment"
-            id="payment"
-            name="payment"
-            value={this.state.payment}
-            onInput={this.handleInput}
-          /> */}
-          <button onClick={this.handlePayment}>Make Payment</button>
-        </div>
-
         <div>
           <History payments={this.state.payments} />
         </div>
@@ -219,53 +205,5 @@ class Calculator extends React.Component {
   }
 }
 
-// //Starting Loan Component
-// class StartingInput extends React.Component {
-//   constructor() {
-//     super();
-//     this.state = {};
-//   }
-//   render() {
-//     const { loan, interest } = this.state;
-//     return (
-//       <div>
-//         <h2>Starting Loan</h2>
-//         <div>
-//           <h3>Starting Balance:</h3>
-//           <input name="loan" value={loan} onChange={this.onInput} />
-//           <h3>Interest Rate:</h3>
-//           <input name="interest" value={interest} onChange={this.onInput} />
-//         </div>
-//         <div>
-//           <button onClick={this.handleSubmit}>Calculate</button>
-//         </div>
-//       </div>
-//     );
-//   }
-// }
-
-// //Loan Breakdown Payment Component
-// class LoanBreakDown extends React.Component {
-//   render() {
-//     return (
-//       <div>
-//         <h2>=/Loan Breakdown/=</h2>
-//         <h3>Principal: {this.props.loanHeading}</h3>
-//         <h3>Interest: {this.props.interestHeading}</h3>
-//         <h3>Total Balance: {this.props.balance}</h3>
-//         <h2>=/Payment/=</h2>
-//         <h3>1% of principal required: {this.props.minPrincipal}</h3>
-//         <h3>Min Total Payment: {this.props.minBalanceDue}</h3>
-//       </div>
-//     );
-//   }
-// }
-
-// //Payment Component
-// class Payment extends React.Component {
-//   render() {
-//     return <div></div>;
-//   }
-// }
 
 export default Calculator;

@@ -12,6 +12,63 @@ code {
     monospace;
 }
 
-.calculatorBody {
+.calculator-container {
   display: flex;
+  flex-wrap: wrap; 
+  max-width: 850px; 
+  justify-content: space-between; 
+  margin: 0 auto;
+}
+
+.loan-breakdown p {
+  text-align: left; 
+}
+
+.input-wrapper {
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 300px;
+  margin: auto;
+}
+
+.input-wrapper input {
+  border: 1px solid #000;
+  border-radius: 4px; 
+  height: 25px;
+}
+
+.input-container, .breakdown-container {
+  border: 1px solid #fff;
+  border-radius: 8px;
+  padding: 0 10px; 
+  width: 390px;
+}
+
+button {
+  border: 1px solid #fff;
+  height: 25px;
+  border-radius: 8px;
+  appearance: none;
+  color: #282c34;
+  font-weight: 700;
+  background-color: #fff;
+  margin: 0 5px;
+}
+
+button:hover {
+  cursor: pointer; 
+}
+
+.payment-table {
+  border: 1px solid #fff; 
+  border-collapse: collapse; 
+  border-radius: 8px;
+  width: 850px; 
+  margin: 0; 
+}
+
+.payment-table th , .payment-table td{
+  border: 1px solid #fff; 
 }
