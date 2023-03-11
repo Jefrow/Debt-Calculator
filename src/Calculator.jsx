@@ -24,10 +24,11 @@ class Calculator extends React.Component {
   //Event handlers
   handleInput = (e) => {
     this.setState({ [e.target.name]: e.target.value });
+    e.preventDefault();
   };
 
   handleSubmit = (e) => {
-    if(this.checkInput(this.state.principalInput) && this.checkInput(this.state.interestInput) && this.currDebt(this.state.principal)){
+    if(this.checkInput(this.state.principalInput) || this.checkInput(this.state.interestInput) || this.currDebt(this.state.principal)){
 
       let principal, interest, balance, minPrincipal, totalPayment = '';
 
@@ -133,6 +134,9 @@ class Calculator extends React.Component {
     if(Number(input) <= 0){
       this.setState({warning:'Inputs must be greater than 0.'})
       return false;
+    }if(!input){
+      this.state({warning:'Provide loan and interest'})
+      return false; 
     }
     this.setState({warning:''})
     return true; 
