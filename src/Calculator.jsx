@@ -28,7 +28,7 @@ class Calculator extends React.Component {
   };
 
   handleSubmit = (e) => {
-    if(this.checkInput(this.state.principalInput) || this.checkInput(this.state.interestInput) || this.currDebt(this.state.principal)){
+    if(this.checkInput(this.state.principalInput) && this.checkInput(this.state.interestInput) && this.currDebt(this.state.principal)){
 
       let principal, interest, balance, minPrincipal, totalPayment = '';
 
