@@ -131,12 +131,12 @@ class Calculator extends React.Component {
 
   //Input checks
   checkInput = (input) => {
-    if(Number(input) <= 0){
-      this.setState({warning:'Inputs must be greater than 0.'})
-      return false;
-    }if(!input){
+    if(!input){
       this.state({warning:'Provide loan and interest'})
       return false; 
+    }else if(Number(input) <= 0){
+      this.setState({warning:'Inputs must be greater than 0.'})
+      return false;
     }
     this.setState({warning:''})
     return true; 
