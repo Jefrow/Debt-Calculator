@@ -8,11 +8,14 @@ class Calculator extends React.Component {
   constructor() {
     super();
     this.state = {
-      principal: 0.00, 
-      interest: 0.00, 
-      balance: 0.00,
-      minPrincipal: 0.00, 
-      totalPayment: 0.00, 
+      principalInput:"",
+      interestInput:"",
+      paymentInput:"",
+      principal: "", 
+      interest: "", 
+      balance: "",
+      minPrincipal: "", 
+      totalPayment: "", 
       count: 1,
       id: 0, 
       newBalance: "", 
@@ -106,15 +109,15 @@ class Calculator extends React.Component {
     this.setState({
       principalInput: "", 
       interestInput: "", 
-      principal: 0, 
-      interest: 0, 
-      balance: 0, 
-      minPrincipal: 0, 
-      totalPayment: 0, 
+      paymentInput:"",
+      principal: "", 
+      interest: "", 
+      balance: "", 
+      minPrincipal: "", 
+      totalPayment: "", 
       count:1,
       id:1, 
       payments:[], 
-      payment:"",
       warning:""
     })
   }
@@ -131,15 +134,16 @@ class Calculator extends React.Component {
 
   //Input checks
   checkInput = (input) => {
-    if(!input){
-      this.state({warning:'Provide loan and interest'})
-      return false; 
-    }else if(Number(input) <= 0){
+    if(Number(input) <= 0){
       this.setState({warning:'Inputs must be greater than 0.'})
-      return false;
+      return false; 
+    }
+    if(isNaN(input)){
+      this.setState({warning:'Must be a valid number'})
+      return false; 
     }
     this.setState({warning:''})
-    return true; 
+    return true;
   }
 
   checkPayment = (payment, totalPayment, balance) => {
@@ -162,7 +166,7 @@ class Calculator extends React.Component {
   }
 
   currDebt = (principal) => {
-    if(principal){
+    if(principal > 0){
       this.setState({warning:'please click reset to start over.'})
       return false 
     }
