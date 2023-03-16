@@ -7,33 +7,36 @@ class StartingInput extends React.Component {
   }
 
   render() {
+    const buttons = [
+      { id:1, label: 'Calculate Loan', action: this.props.onSubmit },
+      { id:2, label: 'Reset Input', action: this.props.onReset}
+    ]; 
+    const inputs = [
+      { id: 'principalInput', label: 'Principal', ph:'3800', val:'principalInput'},
+      { id: 'interestInput', label: 'Interest', ph:'9.5 = 9.5% ', val:'interestInput'},
+    ]
+    
     return (
       <div>
         <h4>=|Starting Loan|=</h4>
         <div className="loan-container">
-          <div className="input-wrapper">
-            <label htmlFor="principalInput">Principal:</label>
+          {inputs.map((item) => (
+            <div className="input-wrapper" key={item.id}>
+            <label htmlFor={item.id}>{item.label}:</label>
             <input 
-            name="principalInput" 
-            value={this.props.principalInput} 
-            placeholder="38000" 
-            type="number" 
-            onChange={this.handleChange} 
+              id={item.id}
+              name={item.id} 
+              value={this.props[item.val]} 
+              placeholder={item.ph} 
+              type="number" 
+              onChange={this.handleChange} 
             />
-          </div>
-          <div className="input-wrapper">
-            <label htmlFor="interestInput">Interest:</label>
-            <input 
-            name="interestInput" 
-            value={this.props.interestInput} 
-            placeholder="9.5 = 9.5% , 10 = 10%" 
-            type="number" 
-            onChange={this.handleChange}
-            />
-          </div>
+            </div>
+          ))}
         </div>
-          <button onClick={this.props.onSubmit}>Calculate Loan</button>
-          <button onClick={this.props.onReset}>Reset Input</button>
+          {buttons.map((button) => (
+            <button onClick={button.action} key={button.id}>{button.label}</button>
+          ))}
       </div>
     )
   }
